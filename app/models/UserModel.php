@@ -4,6 +4,7 @@ class UserModel
 {
     private $conn;
 
+
     public function __construct($conn)
     {
         $this->conn = $conn;
@@ -12,17 +13,25 @@ class UserModel
 
     public function usernameExists($username)
     {
-        $sql = "SELECT id FROM users WHERE username = ?";
+        $sql = "SELECT id
+                FROM users
+                WHERE username = ?";
 
         $stmt = $this->conn->prepare($sql);
 
-        $stmt->execute([$username]);
+        $stmt->execute([
+            $username
+        ]);
 
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
 
-    public function createUser($username, $password, $full_name)
+    public function createUser(
+        $username,
+        $password,
+        $full_name
+    )
     {
         $sql = "INSERT INTO users
                 (username, password, full_name)
@@ -37,17 +46,58 @@ class UserModel
         ]);
     }
 
+
     public function getUserByUsername($username)
-{
-    $sql = "SELECT * FROM users WHERE username = ?";
+    {
+        $sql = "SELECT *
+                FROM users
+                WHERE username = ?";
 
-    $stmt = $this->conn->prepare($sql);
+        $stmt = $this->conn->prepare($sql);
 
-    $stmt->execute([$username]);
+        $stmt->execute([
+            $username
+        ]);
 
-    return $stmt->fetch(PDO::FETCH_ASSOC);
-}
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
 
+
+    public function getUserById($user_id)
+    {
+        $sql = "SELECT *
+                FROM users
+                WHERE id = ?";
+
+        $stmt = $this->conn->prepare($sql);
+
+        $stmt->execute([
+            $user_id
+        ]);
+
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+
+
+    public function updateProfile(
+        $user_id,
+        $full_name,
+        $bio
+    )
+    {
+        $sql = "UPDATE users
+                SET full_name = ?,
+                    bio = ?
+                WHERE id = ?";
+
+        $stmt = $this->conn->prepare($sql);
+
+        return $stmt->execute([
+            $full_name,
+            $bio,
+            $user_id
+        ]);
+    }
 }
 
 ?>

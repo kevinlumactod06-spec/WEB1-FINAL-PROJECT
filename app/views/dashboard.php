@@ -14,114 +14,190 @@ if (!isset($_SESSION["user_id"])) {
 
     <meta charset="UTF-8">
 
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
 
     <title>Dashboard | WEB1 Final Project</title>
 
-    <link rel="stylesheet" href="assets/css/style.css">
+    <link
+        rel="stylesheet"
+        href="assets/css/style.css"
+    >
 
 </head>
 
 <body>
 
-    <div class="dashboard-container">
+<div class="dashboard-container">
 
-        <header class="dashboard-header">
+    <header class="dashboard-header">
 
-            <div>
-                <h1>🌐 WEB1 Final Project</h1>
+        <div>
 
-                <p>
-                    Welcome,
-                    <?php echo htmlspecialchars($_SESSION["full_name"]); ?>!
-                </p>
-            </div>
+            <h1>🌐 WEB1 Final Project</h1>
 
-            <a
-                href="index.php?page=logout"
-                class="logout-button"
-            >
-                Logout
-            </a>
+            <p>
+                Welcome,
+                <?php
+                echo htmlspecialchars(
+                    $_SESSION["full_name"]
+                );
+                ?>!
+            </p>
 
-        </header>
+        </div>
 
 
-        <main class="dashboard-content">
+        <a
+            href="index.php?page=logout"
+            class="logout-button"
+        >
+            Logout
+        </a>
 
-            <div class="welcome-card">
-
-                <h2>Welcome to your Dashboard</h2>
-
-                <p>
-                    You are successfully logged in.
-                </p>
-
-            </div>
+    </header>
 
 
-            <div class="dashboard-grid">
+    <main class="dashboard-content">
 
-                <div class="dashboard-card">
+        <div class="welcome-card">
 
-                    <div class="card-icon">
-                        👤
-                    </div>
+            <h2>
+                Welcome to your Dashboard
+            </h2>
 
-                    <h3>Profile</h3>
+            <p>
+                You are successfully logged in.
+            </p>
 
-                    <p>
-                        View and manage your profile.
-                    </p>
+        </div>
 
+
+        <div class="dashboard-grid">
+
+
+            <!-- PROFILE -->
+
+            <div class="dashboard-card">
+
+                <div class="card-icon">
+                    👤
                 </div>
 
+                <h3>
+                    Profile
+                </h3>
 
-                <div class="dashboard-card">
-    <div class="card-icon">📝</div>
-    <h3>Posts</h3>
-    <p>Create and view posts.</p>
+                <p>
+                    View and manage your profile.
+                </p>
 
-    <a href="index.php?page=newsfeed">
-        Open Newsfeed
-    </a>
+                <a href="index.php?page=profile">
+                    Open Profile
+                </a>
+
+            </div>
+
+
+            <!-- POSTS -->
+
+            <div class="dashboard-card">
+
+                <div class="card-icon">
+                    📝
+                </div>
+
+                <h3>
+                    Posts
+                </h3>
+
+                <p>
+                    Create and view posts.
+                </p>
+
+                <a href="index.php?page=newsfeed">
+                    Open Newsfeed
+                </a>
+
+            </div>
+
+
+            <!-- COMMENTS -->
+
+            <div class="dashboard-card">
+
+                <div class="card-icon">
+                    💬
+                </div>
+
+                <h3>
+                    Comments
+                </h3>
+
+                <p>
+                    Interact with posts.
+                </p>
+
+                <a href="index.php?page=newsfeed">
+                    View Comments
+                </a>
+
+            </div>
+
+
+            <!-- LIKES -->
+
+            <div class="dashboard-card">
+
+                <div class="card-icon">
+                    ❤️
+                </div>
+
+                <h3>
+                    Likes
+                </h3>
+
+                <p>
+                    Like posts you enjoy.
+                </p>
+
+                <a href="index.php?page=newsfeed">
+                    View Newsfeed
+                </a>
+
+            </div>
+
+
+            <!-- SEARCH -->
+
+            <div class="dashboard-card">
+
+                <div class="card-icon">
+                    🔎
+                </div>
+
+                <h3>
+                    Search
+                </h3>
+
+                <p>
+                    Search for users and posts.
+                </p>
+
+                <a href="index.php?page=search">
+                    Open Search
+                </a>
+
+            </div>
+
+
+        </div>
+
+    </main>
+
 </div>
-
-
-                <div class="dashboard-card">
-
-                    <div class="card-icon">
-                        💬
-                    </div>
-
-                    <h3>Comments</h3>
-
-                    <p>
-                        Interact with posts.
-                    </p>
-
-                </div>
-
-
-                <div class="dashboard-card">
-
-                    <div class="card-icon">
-                        ❤️
-                    </div>
-
-                    <h3>Likes</h3>
-
-                    <p>
-                        Like posts you enjoy.
-                    </p>
-
-                </div>
-
-            </div>
-
-        </main>
-
-    </div>
 
 </body>
 

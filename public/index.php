@@ -6,6 +6,11 @@ $page = $_GET['page'] ?? 'login';
 
 switch ($page) {
 
+
+    // =========================
+    // LOGIN
+    // =========================
+
     case 'login':
 
         require_once "../app/controllers/AuthController.php";
@@ -24,6 +29,10 @@ switch ($page) {
 
         break;
 
+
+    // =========================
+    // REGISTER
+    // =========================
 
     case 'register':
 
@@ -47,12 +56,46 @@ switch ($page) {
         break;
 
 
+    // =========================
+    // DASHBOARD
+    // =========================
+
     case 'dashboard':
 
         require_once "../app/views/dashboard.php";
 
         break;
 
+
+    // =========================
+    // PROFILE
+    // =========================
+
+    case 'profile':
+
+        require_once "../app/controllers/ProfileController.php";
+
+        $controller = new ProfileController();
+
+        $controller->profile();
+
+        break;
+
+
+    case 'update_profile':
+
+        require_once "../app/controllers/ProfileController.php";
+
+        $controller = new ProfileController();
+
+        $controller->update();
+
+        break;
+
+
+    // =========================
+    // NEWSFEED
+    // =========================
 
     case 'newsfeed':
 
@@ -65,6 +108,10 @@ switch ($page) {
         break;
 
 
+    // =========================
+    // CREATE POST
+    // =========================
+
     case 'create_post':
 
         require_once "../app/controllers/PostController.php";
@@ -75,6 +122,10 @@ switch ($page) {
 
         break;
 
+
+    // =========================
+    // EDIT POST
+    // =========================
 
     case 'edit_post':
 
@@ -87,6 +138,10 @@ switch ($page) {
         break;
 
 
+    // =========================
+    // DELETE POST
+    // =========================
+
     case 'delete_post':
 
         require_once "../app/controllers/PostController.php";
@@ -97,6 +152,10 @@ switch ($page) {
 
         break;
 
+
+    // =========================
+    // CREATE COMMENT
+    // =========================
 
     case 'create_comment':
 
@@ -109,6 +168,10 @@ switch ($page) {
         break;
 
 
+    // =========================
+    // EDIT COMMENT
+    // =========================
+
     case 'edit_comment':
 
         require_once "../app/controllers/CommentController.php";
@@ -119,6 +182,10 @@ switch ($page) {
 
         break;
 
+
+    // =========================
+    // DELETE COMMENT
+    // =========================
 
     case 'delete_comment':
 
@@ -131,6 +198,40 @@ switch ($page) {
         break;
 
 
+    // =========================
+    // LIKE / UNLIKE
+    // =========================
+
+    case 'toggle_like':
+
+        require_once "../app/controllers/LikeController.php";
+
+        $controller = new LikeController();
+
+        $controller->toggle();
+
+        break;
+
+
+    // =========================
+    // SEARCH
+    // =========================
+
+    case 'search':
+
+        require_once "../app/controllers/SearchController.php";
+
+        $controller = new SearchController();
+
+        $controller->search();
+
+        break;
+
+
+    // =========================
+    // LOGOUT
+    // =========================
+
     case 'logout':
 
         require_once "../app/controllers/AuthController.php";
@@ -142,6 +243,10 @@ switch ($page) {
         break;
 
 
+    // =========================
+    // DEFAULT
+    // =========================
+
     default:
 
         require_once "../app/controllers/AuthController.php";
@@ -151,6 +256,7 @@ switch ($page) {
         $controller->showLogin();
 
         break;
+
 }
 
 ?>

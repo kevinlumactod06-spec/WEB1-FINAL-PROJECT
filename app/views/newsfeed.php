@@ -7,8 +7,10 @@ if (!isset($_SESSION["user_id"])) {
 
 require_once "../config/database.php";
 require_once "../app/models/CommentModel.php";
+require_once "../app/models/LikeModel.php";
 
 $commentModel = new CommentModel($GLOBALS["conn"]);
+$likeModel = new LikeModel($GLOBALS["conn"]);
 
 ?>
 
@@ -19,11 +21,17 @@ $commentModel = new CommentModel($GLOBALS["conn"]);
 
     <meta charset="UTF-8">
 
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
 
     <title>Newsfeed | WEB1 Final Project</title>
 
-    <link rel="stylesheet" href="assets/css/style.css">
+    <link
+        rel="stylesheet"
+        href="assets/css/style.css"
+    >
 
 </head>
 
@@ -31,23 +39,41 @@ $commentModel = new CommentModel($GLOBALS["conn"]);
 
 <div class="newsfeed-container">
 
+
+    <!-- HEADER -->
+
     <header class="newsfeed-header">
 
         <div>
 
-            <h1>🌐 WEB1 Final Project</h1>
+            <h1>
+                🌐 WEB1 Final Project
+            </h1>
 
             <p>
                 Welcome,
-                <?php echo htmlspecialchars($_SESSION["full_name"]); ?>!
+                <?php
+                echo htmlspecialchars(
+                    $_SESSION["full_name"]
+                );
+                ?>!
             </p>
 
         </div>
+
 
         <div>
 
             <a href="index.php?page=dashboard">
                 Dashboard
+            </a>
+
+            <a href="index.php?page=profile">
+                Profile
+            </a>
+
+            <a href="index.php?page=search">
+                🔎 Search
             </a>
 
             <a href="index.php?page=logout">
@@ -59,13 +85,24 @@ $commentModel = new CommentModel($GLOBALS["conn"]);
     </header>
 
 
+    <!-- MAIN CONTENT -->
+
     <main class="newsfeed-content">
+
+
+        <!-- CREATE POST -->
 
         <section class="create-post-card">
 
-            <h2>📝 Create a Post</h2>
+            <h2>
+                📝 Create a Post
+            </h2>
 
-            <form method="POST" action="index.php?page=create_post">
+
+            <form
+                method="POST"
+                action="index.php?page=create_post"
+            >
 
                 <textarea
                     name="content"
@@ -73,6 +110,7 @@ $commentModel = new CommentModel($GLOBALS["conn"]);
                     rows="4"
                     required
                 ></textarea>
+
 
                 <button type="submit">
                     Post
@@ -83,18 +121,26 @@ $commentModel = new CommentModel($GLOBALS["conn"]);
         </section>
 
 
+        <!-- NEWSFEED -->
+
         <section class="posts-section">
 
-            <h2>📰 Newsfeed</h2>
+            <h2>
+                📰 Newsfeed
+            </h2>
 
 
             <?php if (empty($posts)): ?>
 
                 <div class="empty-posts">
 
-                    <p>No posts yet.</p>
+                    <p>
+                        No posts yet.
+                    </p>
 
-                    <p>Be the first to create a post!</p>
+                    <p>
+                        Be the first to create a post!
+                    </p>
 
                 </div>
 
@@ -103,46 +149,90 @@ $commentModel = new CommentModel($GLOBALS["conn"]);
 
                 <?php foreach ($posts as $post): ?>
 
+
+                    <?php
+
+                    $comments =
+                        $commentModel->getCommentsByPost(
+                            $post["id"]
+                        );
+
+
+                    $likeCount =
+                        $likeModel->getLikeCount(
+                            $post["id"]
+                        );
+
+
+                    $userLiked =
+                        $likeModel->userLikedPost(
+                            $post["id"],
+                            $_SESSION["user_id"]
+                        );
+
+                    ?>
+
+
+                    <!-- POST CARD -->
+
                     <article class="post-card">
+
+
+                        <!-- POST HEADER -->
 
                         <div class="post-header">
 
                             <div>
 
                                 <strong>
+
                                     <?php
                                     echo htmlspecialchars(
                                         $post["full_name"]
                                     );
                                     ?>
+
                                 </strong>
 
+
                                 <small>
+
                                     @<?php
                                     echo htmlspecialchars(
                                         $post["username"]
                                     );
                                     ?>
+
                                 </small>
 
                             </div>
 
 
+                            <!-- POST OWNER ACTIONS -->
+
                             <?php if (
-                                $post["user_id"] == $_SESSION["user_id"]
+                                $post["user_id"]
+                                == $_SESSION["user_id"]
                             ): ?>
 
                                 <div class="post-actions">
 
+
+                                    <!-- EDIT -->
+
                                     <button
                                         type="button"
                                         onclick="showEditForm(
-                                            <?php echo $post['id']; ?>
+                                            <?php
+                                            echo $post['id'];
+                                            ?>
                                         )"
                                     >
                                         Edit
                                     </button>
 
+
+                                    <!-- DELETE -->
 
                                     <form
                                         method="POST"
@@ -158,7 +248,10 @@ $commentModel = new CommentModel($GLOBALS["conn"]);
                                             ?>"
                                         >
 
-                                        <button type="submit">
+
+                                        <button
+                                            type="submit"
+                                        >
                                             Delete
                                         </button>
 
@@ -171,6 +264,8 @@ $commentModel = new CommentModel($GLOBALS["conn"]);
                         </div>
 
 
+                        <!-- POST CONTENT -->
+
                         <div
                             class="post-content"
                             id="post-content-<?php
@@ -179,15 +274,19 @@ $commentModel = new CommentModel($GLOBALS["conn"]);
                         >
 
                             <?php
+
                             echo nl2br(
                                 htmlspecialchars(
                                     $post["content"]
                                 )
                             );
+
                             ?>
 
                         </div>
 
+
+                        <!-- EDIT POST FORM -->
 
                         <div
                             class="edit-post-form"
@@ -210,24 +309,33 @@ $commentModel = new CommentModel($GLOBALS["conn"]);
                                     ?>"
                                 >
 
+
                                 <textarea
                                     name="content"
                                     rows="4"
                                     required
                                 ><?php
+
                                 echo htmlspecialchars(
                                     $post["content"]
                                 );
+
                                 ?></textarea>
 
-                                <button type="submit">
+
+                                <button
+                                    type="submit"
+                                >
                                     Save Changes
                                 </button>
+
 
                                 <button
                                     type="button"
                                     onclick="hideEditForm(
-                                        <?php echo $post['id']; ?>
+                                        <?php
+                                        echo $post['id'];
+                                        ?>
                                     )"
                                 >
                                     Cancel
@@ -238,13 +346,77 @@ $commentModel = new CommentModel($GLOBALS["conn"]);
                         </div>
 
 
+                        <!-- POST DATE -->
+
                         <div class="post-date">
 
                             <?php
+
                             echo htmlspecialchars(
                                 $post["created_at"]
                             );
+
                             ?>
+
+                        </div>
+
+
+                        <!-- LIKE SECTION -->
+
+                        <div class="like-section">
+
+                            <form
+                                method="POST"
+                                action="index.php?page=toggle_like"
+                            >
+
+                                <input
+                                    type="hidden"
+                                    name="post_id"
+                                    value="<?php
+                                    echo $post['id'];
+                                    ?>"
+                                >
+
+
+                                <?php if ($userLiked): ?>
+
+                                    <button
+                                        type="submit"
+                                    >
+                                        ❤️ Liked
+                                    </button>
+
+                                <?php else: ?>
+
+                                    <button
+                                        type="submit"
+                                    >
+                                        🤍 Like
+                                    </button>
+
+                                <?php endif; ?>
+
+                            </form>
+
+
+                            <span>
+
+                                <?php
+                                echo $likeCount;
+                                ?>
+
+                                <?php
+
+                                echo (
+                                    $likeCount == 1
+                                )
+                                    ? " Like"
+                                    : " Likes";
+
+                                ?>
+
+                            </span>
 
                         </div>
 
@@ -253,17 +425,9 @@ $commentModel = new CommentModel($GLOBALS["conn"]);
 
                         <div class="comments-section">
 
-                            <h3>💬 Comments</h3>
-
-
-                            <?php
-
-                            $comments =
-                                $commentModel->getCommentsByPost(
-                                    $post["id"]
-                                );
-
-                            ?>
+                            <h3>
+                                💬 Comments
+                            </h3>
 
 
                             <?php if (empty($comments)): ?>
@@ -275,61 +439,96 @@ $commentModel = new CommentModel($GLOBALS["conn"]);
                             <?php else: ?>
 
 
-                                <?php foreach ($comments as $comment): ?>
+                                <?php foreach (
+                                    $comments as $comment
+                                ): ?>
+
+
+                                    <!-- COMMENT -->
 
                                     <div class="comment-item">
 
-                                        <div class="comment-header">
+
+                                        <!-- COMMENT HEADER -->
+
+                                        <div
+                                            class="comment-header"
+                                        >
 
                                             <strong>
+
                                                 <?php
                                                 echo htmlspecialchars(
                                                     $comment["full_name"]
                                                 );
                                                 ?>
+
                                             </strong>
 
+
                                             <small>
+
                                                 @<?php
                                                 echo htmlspecialchars(
                                                     $comment["username"]
                                                 );
                                                 ?>
+
                                             </small>
 
                                         </div>
 
 
-                                        <div class="comment-content">
+                                        <!-- COMMENT CONTENT -->
+
+                                        <div
+                                            class="comment-content"
+                                        >
 
                                             <?php
+
                                             echo nl2br(
                                                 htmlspecialchars(
                                                     $comment["content"]
                                                 )
                                             );
+
                                             ?>
 
                                         </div>
 
 
-                                        <div class="comment-date">
+                                        <!-- COMMENT DATE -->
+
+                                        <div
+                                            class="comment-date"
+                                        >
 
                                             <?php
+
                                             echo htmlspecialchars(
                                                 $comment["created_at"]
                                             );
+
                                             ?>
 
                                         </div>
 
+
+                                        <!-- COMMENT OWNER ACTIONS -->
 
                                         <?php if (
                                             $comment["user_id"]
                                             == $_SESSION["user_id"]
                                         ): ?>
 
-                                            <div class="comment-actions">
+
+                                            <div
+                                                class="comment-actions"
+                                            >
+
+
+                                                <!-- EDIT COMMENT -->
 
                                                 <button
                                                     type="button"
@@ -342,6 +541,8 @@ $commentModel = new CommentModel($GLOBALS["conn"]);
                                                     Edit
                                                 </button>
 
+
+                                                <!-- DELETE COMMENT -->
 
                                                 <form
                                                     method="POST"
@@ -357,7 +558,10 @@ $commentModel = new CommentModel($GLOBALS["conn"]);
                                                         ?>"
                                                     >
 
-                                                    <button type="submit">
+
+                                                    <button
+                                                        type="submit"
+                                                    >
                                                         Delete
                                                     </button>
 
@@ -365,6 +569,8 @@ $commentModel = new CommentModel($GLOBALS["conn"]);
 
                                             </div>
 
+
+                                            <!-- EDIT COMMENT FORM -->
 
                                             <div
                                                 id="comment-edit-<?php
@@ -386,19 +592,26 @@ $commentModel = new CommentModel($GLOBALS["conn"]);
                                                         ?>"
                                                     >
 
+
                                                     <textarea
                                                         name="content"
                                                         rows="3"
                                                         required
                                                     ><?php
+
                                                     echo htmlspecialchars(
                                                         $comment["content"]
                                                     );
+
                                                     ?></textarea>
 
-                                                    <button type="submit">
+
+                                                    <button
+                                                        type="submit"
+                                                    >
                                                         Save
                                                     </button>
+
 
                                                     <button
                                                         type="button"
@@ -417,14 +630,17 @@ $commentModel = new CommentModel($GLOBALS["conn"]);
 
                                         <?php endif; ?>
 
+
                                     </div>
 
+
                                 <?php endforeach; ?>
+
 
                             <?php endif; ?>
 
 
-                            <!-- ADD COMMENT -->
+                            <!-- CREATE COMMENT -->
 
                             <form
                                 method="POST"
@@ -440,6 +656,7 @@ $commentModel = new CommentModel($GLOBALS["conn"]);
                                     ?>"
                                 >
 
+
                                 <textarea
                                     name="content"
                                     placeholder="Write a comment..."
@@ -447,29 +664,41 @@ $commentModel = new CommentModel($GLOBALS["conn"]);
                                     required
                                 ></textarea>
 
-                                <button type="submit">
+
+                                <button
+                                    type="submit"
+                                >
                                     Comment
                                 </button>
 
                             </form>
 
+
                         </div>
 
+
                     </article>
+
 
                 <?php endforeach; ?>
 
 
             <?php endif; ?>
 
+
         </section>
 
+
     </main>
+
 
 </div>
 
 
+<!-- JAVASCRIPT -->
+
 <script>
+
 
 function showEditForm(postId)
 {
@@ -477,10 +706,12 @@ function showEditForm(postId)
         "post-content-" + postId
     ).style.display = "none";
 
+
     document.getElementById(
         "edit-form-" + postId
     ).style.display = "block";
 }
+
 
 
 function hideEditForm(postId)
@@ -489,10 +720,12 @@ function hideEditForm(postId)
         "post-content-" + postId
     ).style.display = "block";
 
+
     document.getElementById(
         "edit-form-" + postId
     ).style.display = "none";
 }
+
 
 
 function showCommentEdit(commentId)
@@ -503,6 +736,7 @@ function showCommentEdit(commentId)
 }
 
 
+
 function hideCommentEdit(commentId)
 {
     document.getElementById(
@@ -510,7 +744,9 @@ function hideCommentEdit(commentId)
     ).style.display = "none";
 }
 
+
 </script>
+
 
 </body>
 
