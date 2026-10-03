@@ -1,103 +1,36 @@
 <?php
+require_once __DIR__ . '/../../config/database.php';
 
-class UserModel
-{
-    private $conn;
-
-
-    public function __construct($conn)
-    {
-        $this->conn = $conn;
+class UserModel {
+    public static function create($username, $hashed_password, $full_name) {
+        $db = Database::connect();
+        $stmt = $db->prepare("INSERT INTO users (username, password, full_name) VALUES (?, ?, ?)");
+        return $stmt->execute([$username, $hashed_password, $full_name]);
     }
 
-
-    public function usernameExists($username)
-    {
-        $sql = "SELECT id
-                FROM users
-                WHERE username = ?";
-
-        $stmt = $this->conn->prepare($sql);
-
-        $stmt->execute([
-            $username
-        ]);
-
+    public static function findByUsername($username) {
+        $db = Database::connect();
+        $stmt = $db->prepare("SELECT * FROM users WHERE username = ?");
+        $stmt->execute([$username]);
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
-
-    public function createUser(
-        $username,
-        $password,
-        $full_name
-    )
-    {
-        $sql = "INSERT INTO users
-                (username, password, full_name)
-                VALUES (?, ?, ?)";
-
-        $stmt = $this->conn->prepare($sql);
-
-        return $stmt->execute([
-            $username,
-            $password,
-            $full_name
-        ]);
-    }
-
-
-    public function getUserByUsername($username)
-    {
-        $sql = "SELECT *
-                FROM users
-                WHERE username = ?";
-
-        $stmt = $this->conn->prepare($sql);
-
-        $stmt->execute([
-            $username
-        ]);
-
+    public static function findById($id) {
+        $db = Database::connect();
+        $stmt = $db->prepare("SELECT * FROM users WHERE id = ?");
+        $stmt->execute([$id]);
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
-
-    public function getUserById($user_id)
-    {
-        $sql = "SELECT *
-                FROM users
-                WHERE id = ?";
-
-        $stmt = $this->conn->prepare($sql);
-
-        $stmt->execute([
-            $user_id
-        ]);
-
-        return $stmt->fetch(PDO::FETCH_ASSOC);
-    }
-
-
-    public function updateProfile(
-        $user_id,
-        $full_name,
-        $bio
-    )
-    {
-        $sql = "UPDATE users
-                SET full_name = ?,
-                    bio = ?
-                WHERE id = ?";
-
-        $stmt = $this->conn->prepare($sql);
-
-        return $stmt->execute([
-            $full_name,
-            $bio,
-            $user_id
-        ]);
+    public static function updateProfile($id, $bio, $profile_image) {
+        $db = Database::connect();
+        if ($profile_image) {
+            $stmt = $db->prepare("UPDATE users SET bio = ?, profile_image = ? WHERE id = ?");
+            return $stmt->execute([$bio, $profile_image, $id]);
+        } else {
+            $stmt = $db->prepare("UPDATE users SET bio = ? WHERE id = ?");
+            return $stmt->execute([$bio, $id]);
+        }
     }
 }
-
 ?>

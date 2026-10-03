@@ -1,127 +1,88 @@
 <?php
+require_once __DIR__ . '/../models/PostModel.php';
 
-require_once "../config/database.php";
-require_once "../app/models/PostModel.php";
-
-class PostController
-{
-
-    public function create()
-    {
-        if (!isset($_SESSION["user_id"])) {
-            header("Location: index.php?page=login");
+class PostController {
+    public function newsfeed() {
+        if (!isset($_SESSION['user_id'])) {
+            header('Location: index.php?route=login');
             exit;
         }
 
-        if ($_SERVER["REQUEST_METHOD"] !== "POST") {
-            header("Location: index.php?page=newsfeed");
+        $posts = PostModel::getAllPosts();
+        require_once __DIR__ . '/../views/newsfeed.php';
+    }
+
+    public function create() {
+        if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SESSION['user_id'])) {
+            $user_id = $_SESSION['user_id'];
+            $content = trim($_POST['content'] ?? '');
+            $imageName = null;
+
+            if (!empty($_FILES['image']['name'])) {
+                $targetDir = __DIR__ . '/../../public/assets/images/';
+                if (!is_dir($targetDir)) {
+                    mkdir($targetDir, 0777, true);
+                }
+                $ext = pathinfo($_FILES['image']['name'], PATHINFO_EXTENSION);
+                $imageName = 'post_' . time() . '_' . mt_rand(1000, 9999) . '.' . $ext;
+                move_uploaded_file($_FILES['image']['tmp_name'], $targetDir . $imageName);
+            }
+
+            if (!empty($content) || $imageName) {
+                PostModel::create($user_id, $content, $imageName);
+            }
+
+            header('Location: index.php?route=newsfeed');
+            exit;
+        }
+    }
+
+    public function edit() {
+        if (!isset($_SESSION['user_id']) || !isset($_GET['id'])) {
+            header('Location: index.php?route=profile');
             exit;
         }
 
-        $content = trim($_POST["content"] ?? "");
+        $postId = $_GET['id'];
+        $userId = $_SESSION['user_id'];
+        $post = PostModel::findById($postId, $userId);
 
-        if (empty($content)) {
-            header("Location: index.php?page=newsfeed&error=empty");
+        if (!$post) {
+            header('Location: index.php?route=profile');
             exit;
         }
 
-        $postModel = new PostModel($GLOBALS["conn"]);
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $content = trim($_POST['content'] ?? '');
+            $imageName = null;
 
-        $result = $postModel->createPost(
-            $_SESSION["user_id"],
-            $content
-        );
+            if (!empty($_FILES['image']['name'])) {
+                $targetDir = __DIR__ . '/../../public/assets/images/';
+                if (!is_dir($targetDir)) {
+                    mkdir($targetDir, 0777, true);
+                }
+                $ext = pathinfo($_FILES['image']['name'], PATHINFO_EXTENSION);
+                $imageName = 'post_' . time() . '_' . mt_rand(1000, 9999) . '.' . $ext;
+                move_uploaded_file($_FILES['image']['tmp_name'], $targetDir . $imageName);
+            }
 
-        if ($result) {
-            header("Location: index.php?page=newsfeed");
+            PostModel::update($postId, $userId, $content, $imageName);
+            header('Location: index.php?route=profile');
             exit;
         }
 
-        header("Location: index.php?page=newsfeed&error=failed");
+        require_once __DIR__ . '/../views/edit_post.php';
+    }
+
+    public function delete() {
+        if (isset($_SESSION['user_id']) && isset($_GET['id'])) {
+            $postId = $_GET['id'];
+            $userId = $_SESSION['user_id'];
+            
+            PostModel::delete($postId, $userId);
+        }
+        header('Location: index.php?route=profile');
         exit;
     }
-
-
-    public function newsfeed()
-    {
-        if (!isset($_SESSION["user_id"])) {
-            header("Location: index.php?page=login");
-            exit;
-        }
-
-        $postModel = new PostModel($GLOBALS["conn"]);
-
-        $posts = $postModel->getAllPosts();
-
-        require_once "../app/views/newsfeed.php";
-    }
-
-
-    public function edit()
-    {
-        if (!isset($_SESSION["user_id"])) {
-            header("Location: index.php?page=login");
-            exit;
-        }
-
-        if ($_SERVER["REQUEST_METHOD"] !== "POST") {
-            header("Location: index.php?page=newsfeed");
-            exit;
-        }
-
-        $post_id = $_POST["post_id"] ?? "";
-        $content = trim($_POST["content"] ?? "");
-
-        if (empty($post_id) || empty($content)) {
-            header("Location: index.php?page=newsfeed&error=empty");
-            exit;
-        }
-
-        $postModel = new PostModel($GLOBALS["conn"]);
-
-        $result = $postModel->updatePost(
-            $post_id,
-            $_SESSION["user_id"],
-            $content
-        );
-
-        header("Location: index.php?page=newsfeed");
-
-        exit;
-    }
-
-
-    public function delete()
-    {
-        if (!isset($_SESSION["user_id"])) {
-            header("Location: index.php?page=login");
-            exit;
-        }
-
-        if ($_SERVER["REQUEST_METHOD"] !== "POST") {
-            header("Location: index.php?page=newsfeed");
-            exit;
-        }
-
-        $post_id = $_POST["post_id"] ?? "";
-
-        if (empty($post_id)) {
-            header("Location: index.php?page=newsfeed");
-            exit;
-        }
-
-        $postModel = new PostModel($GLOBALS["conn"]);
-
-        $result = $postModel->deletePost(
-            $post_id,
-            $_SESSION["user_id"]
-        );
-
-        header("Location: index.php?page=newsfeed");
-
-        exit;
-    }
-
 }
-
 ?>

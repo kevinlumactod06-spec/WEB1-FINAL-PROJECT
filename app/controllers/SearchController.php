@@ -1,41 +1,21 @@
 <?php
+require_once __DIR__ . '/../models/SearchModel.php';
 
-require_once "../config/database.php";
-require_once "../app/models/SearchModel.php";
-
-class SearchController
-{
-
-    public function search()
-    {
-        if (!isset($_SESSION["user_id"])) {
-            header("Location: index.php?page=login");
+class SearchController {
+    public function search() {
+        if (!isset($_SESSION['user_id'])) {
+            header('Location: index.php?route=login');
             exit;
         }
 
-        $keyword = trim($_GET["keyword"] ?? "");
-
+        $query = isset($_GET['q']) ? trim($_GET['q']) : '';
         $users = [];
-        $posts = [];
 
-        if (!empty($keyword)) {
-
-            $searchModel = new SearchModel(
-                $GLOBALS["conn"]
-            );
-
-            $users = $searchModel->searchUsers(
-                $keyword
-            );
-
-            $posts = $searchModel->searchPosts(
-                $keyword
-            );
+        if (!empty($query)) {
+            $users = SearchModel::searchUsers($query);
         }
 
-        require_once "../app/views/search.php";
+        require_once __DIR__ . '/../views/search.php';
     }
-
 }
-
 ?>

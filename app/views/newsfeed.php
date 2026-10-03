@@ -1,753 +1,102 @@
-<?php
-
-if (!isset($_SESSION["user_id"])) {
-    header("Location: index.php?page=login");
-    exit;
-}
-
-require_once "../config/database.php";
-require_once "../app/models/CommentModel.php";
-require_once "../app/models/LikeModel.php";
-
-$commentModel = new CommentModel($GLOBALS["conn"]);
-$likeModel = new LikeModel($GLOBALS["conn"]);
-
-?>
-
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-
     <meta charset="UTF-8">
-
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
-
-    <title>Newsfeed | WEB1 Final Project</title>
-
-    <link
-        rel="stylesheet"
-        href="assets/css/style.css"
-    >
-
+    <title>Newsfeed - Social App</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="assets/css/style.css">
 </head>
-
-<body>
-
-<div class="newsfeed-container">
-
-
-    <!-- HEADER -->
-
-    <header class="newsfeed-header">
-
-        <div>
-
-            <h1>
-                🌐 WEB1 Final Project
-            </h1>
-
-            <p>
-                Welcome,
-                <?php
-                echo htmlspecialchars(
-                    $_SESSION["full_name"]
-                );
-                ?>!
-            </p>
-
+<body class="bg-light">
+    <!-- Navbar with Home Button -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="index.php?route=newsfeed">MiniSocial</a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link active" href="index.php?route=newsfeed">Home</a>
+                <a class="nav-link" href="index.php?route=search">Search</a>
+                <a class="nav-link" href="index.php?route=profile">Profile</a>
+                <a class="nav-link text-danger" href="index.php?route=logout">Logout</a>
+            </div>
         </div>
+    </nav>
 
-
-        <div>
-
-            <a href="index.php?page=dashboard">
-                Dashboard
-            </a>
-
-            <a href="index.php?page=profile">
-                Profile
-            </a>
-
-            <a href="index.php?page=search">
-                🔎 Search
-            </a>
-
-            <a href="index.php?page=logout">
-                Logout
-            </a>
-
-        </div>
-
-    </header>
-
-
-    <!-- MAIN CONTENT -->
-
-    <main class="newsfeed-content">
-
-
-        <!-- CREATE POST -->
-
-        <section class="create-post-card">
-
-            <h2>
-                📝 Create a Post
-            </h2>
-
-
-            <form
-                method="POST"
-                action="index.php?page=create_post"
-            >
-
-                <textarea
-                    name="content"
-                    placeholder="What's on your mind?"
-                    rows="4"
-                    required
-                ></textarea>
-
-
-                <button type="submit">
-                    Post
-                </button>
-
-            </form>
-
-        </section>
-
-
-        <!-- NEWSFEED -->
-
-        <section class="posts-section">
-
-            <h2>
-                📰 Newsfeed
-            </h2>
-
-
-            <?php if (empty($posts)): ?>
-
-                <div class="empty-posts">
-
-                    <p>
-                        No posts yet.
-                    </p>
-
-                    <p>
-                        Be the first to create a post!
-                    </p>
-
+    <div class="container mt-4">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <!-- Create Post Box -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-body">
+                        <form action="index.php?route=create_post" method="POST" enctype="multipart/form-data">
+                            <div class="mb-3">
+                                <textarea class="form-control" name="content" rows="3" placeholder="What's on your mind, <?= htmlspecialchars($_SESSION['full_name'] ?? ''); ?>?" required></textarea>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <input type="file" name="image" class="form-control form-control-sm w-50">
+                                <button type="submit" class="btn btn-primary">Post</button>
+                            </div>
+                        </form>
+                    </div>
                 </div>
 
-            <?php else: ?>
-
-
-                <?php foreach ($posts as $post): ?>
-
-
-                    <?php
-
-                    $comments =
-                        $commentModel->getCommentsByPost(
-                            $post["id"]
-                        );
-
-
-                    $likeCount =
-                        $likeModel->getLikeCount(
-                            $post["id"]
-                        );
-
-
-                    $userLiked =
-                        $likeModel->userLikedPost(
-                            $post["id"],
-                            $_SESSION["user_id"]
-                        );
-
-                    ?>
-
-
-                    <!-- POST CARD -->
-
-                    <article class="post-card">
-
-
-                        <!-- POST HEADER -->
-
-                        <div class="post-header">
-
-                            <div>
-
-                                <strong>
-
-                                    <?php
-                                    echo htmlspecialchars(
-                                        $post["full_name"]
-                                    );
-                                    ?>
-
-                                </strong>
-
-
-                                <small>
-
-                                    @<?php
-                                    echo htmlspecialchars(
-                                        $post["username"]
-                                    );
-                                    ?>
-
-                                </small>
-
-                            </div>
-
-
-                            <!-- POST OWNER ACTIONS -->
-
-                            <?php if (
-                                $post["user_id"]
-                                == $_SESSION["user_id"]
-                            ): ?>
-
-                                <div class="post-actions">
-
-
-                                    <!-- EDIT -->
-
-                                    <button
-                                        type="button"
-                                        onclick="showEditForm(
-                                            <?php
-                                            echo $post['id'];
-                                            ?>
-                                        )"
-                                    >
-                                        Edit
-                                    </button>
-
-
-                                    <!-- DELETE -->
-
-                                    <form
-                                        method="POST"
-                                        action="index.php?page=delete_post"
-                                        style="display:inline;"
-                                    >
-
-                                        <input
-                                            type="hidden"
-                                            name="post_id"
-                                            value="<?php
-                                            echo $post['id'];
-                                            ?>"
-                                        >
-
-
-                                        <button
-                                            type="submit"
-                                        >
-                                            Delete
-                                        </button>
-
-                                    </form>
-
+                <!-- Feed -->
+                <h4 class="mb-3">Newsfeed</h4>
+                <?php if (!empty($posts)): ?>
+                    <?php foreach ($posts as $post): ?>
+                        <div class="card shadow-sm mb-3">
+                            <div class="card-body">
+                                <div class="d-flex align-items-center mb-3">
+                                    <img src="assets/images/<?= htmlspecialchars($post['profile_image'] ?? 'default.png'); ?>" class="rounded-circle me-2" width="40" height="40" alt="Avatar">
+                                    <div>
+                                        <h6 class="mb-0 fw-bold"><?= htmlspecialchars($post['full_name']); ?></h6>
+                                        <small class="text-muted">@<?= htmlspecialchars($post['username']); ?> • <?= $post['created_at']; ?></small>
+                                    </div>
                                 </div>
-
-                            <?php endif; ?>
-
-                        </div>
-
-
-                        <!-- POST CONTENT -->
-
-                        <div
-                            class="post-content"
-                            id="post-content-<?php
-                            echo $post['id'];
-                            ?>"
-                        >
-
-                            <?php
-
-                            echo nl2br(
-                                htmlspecialchars(
-                                    $post["content"]
-                                )
-                            );
-
-                            ?>
-
-                        </div>
-
-
-                        <!-- EDIT POST FORM -->
-
-                        <div
-                            class="edit-post-form"
-                            id="edit-form-<?php
-                            echo $post['id'];
-                            ?>"
-                            style="display:none;"
-                        >
-
-                            <form
-                                method="POST"
-                                action="index.php?page=edit_post"
-                            >
-
-                                <input
-                                    type="hidden"
-                                    name="post_id"
-                                    value="<?php
-                                    echo $post['id'];
-                                    ?>"
-                                >
-
-
-                                <textarea
-                                    name="content"
-                                    rows="4"
-                                    required
-                                ><?php
-
-                                echo htmlspecialchars(
-                                    $post["content"]
-                                );
-
-                                ?></textarea>
-
-
-                                <button
-                                    type="submit"
-                                >
-                                    Save Changes
-                                </button>
-
-
-                                <button
-                                    type="button"
-                                    onclick="hideEditForm(
-                                        <?php
-                                        echo $post['id'];
-                                        ?>
-                                    )"
-                                >
-                                    Cancel
-                                </button>
-
-                            </form>
-
-                        </div>
-
-
-                        <!-- POST DATE -->
-
-                        <div class="post-date">
-
-                            <?php
-
-                            echo htmlspecialchars(
-                                $post["created_at"]
-                            );
-
-                            ?>
-
-                        </div>
-
-
-                        <!-- LIKE SECTION -->
-
-                        <div class="like-section">
-
-                            <form
-                                method="POST"
-                                action="index.php?page=toggle_like"
-                            >
-
-                                <input
-                                    type="hidden"
-                                    name="post_id"
-                                    value="<?php
-                                    echo $post['id'];
-                                    ?>"
-                                >
-
-
-                                <?php if ($userLiked): ?>
-
-                                    <button
-                                        type="submit"
-                                    >
-                                        ❤️ Liked
-                                    </button>
-
-                                <?php else: ?>
-
-                                    <button
-                                        type="submit"
-                                    >
-                                        🤍 Like
-                                    </button>
-
+                                <p class="card-text"><?= nl2br(htmlspecialchars($post['content'])); ?></p>
+                                
+                                <?php if (!empty($post['image'])): ?>
+                                    <img src="assets/images/<?= htmlspecialchars($post['image']); ?>" class="img-fluid rounded mb-3" alt="Post Image">
                                 <?php endif; ?>
 
-                            </form>
+                                <!-- Like Section -->
+                                <div class="d-flex justify-content-between align-items-center border-top pt-2 mt-2">
+                                    <?php 
+                                        $likeCount = LikeModel::getCountByPostId($post['id']);
+                                        $hasLiked = LikeModel::hasLiked($post['id'], $_SESSION['user_id']);
+                                    ?>
+                                    <a href="index.php?route=toggle_like&post_id=<?= $post['id']; ?>" class="btn btn-sm <?= $hasLiked ? 'btn-danger' : 'btn-outline-secondary'; ?>">
+                                        ❤️ Like (<?= $likeCount; ?>)
+                                    </a>
+                                </div>
 
-
-                            <span>
-
-                                <?php
-                                echo $likeCount;
-                                ?>
-
-                                <?php
-
-                                echo (
-                                    $likeCount == 1
-                                )
-                                    ? " Like"
-                                    : " Likes";
-
-                                ?>
-
-                            </span>
-
-                        </div>
-
-
-                        <!-- COMMENTS -->
-
-                        <div class="comments-section">
-
-                            <h3>
-                                💬 Comments
-                            </h3>
-
-
-                            <?php if (empty($comments)): ?>
-
-                                <p class="no-comments">
-                                    No comments yet.
-                                </p>
-
-                            <?php else: ?>
-
-
-                                <?php foreach (
-                                    $comments as $comment
-                                ): ?>
-
-
-                                    <!-- COMMENT -->
-
-                                    <div class="comment-item">
-
-
-                                        <!-- COMMENT HEADER -->
-
-                                        <div
-                                            class="comment-header"
-                                        >
-
-                                            <strong>
-
-                                                <?php
-                                                echo htmlspecialchars(
-                                                    $comment["full_name"]
-                                                );
-                                                ?>
-
-                                            </strong>
-
-
-                                            <small>
-
-                                                @<?php
-                                                echo htmlspecialchars(
-                                                    $comment["username"]
-                                                );
-                                                ?>
-
-                                            </small>
-
-                                        </div>
-
-
-                                        <!-- COMMENT CONTENT -->
-
-                                        <div
-                                            class="comment-content"
-                                        >
-
-                                            <?php
-
-                                            echo nl2br(
-                                                htmlspecialchars(
-                                                    $comment["content"]
-                                                )
-                                            );
-
-                                            ?>
-
-                                        </div>
-
-
-                                        <!-- COMMENT DATE -->
-
-                                        <div
-                                            class="comment-date"
-                                        >
-
-                                            <?php
-
-                                            echo htmlspecialchars(
-                                                $comment["created_at"]
-                                            );
-
-                                            ?>
-
-                                        </div>
-
-
-                                        <!-- COMMENT OWNER ACTIONS -->
-
-                                        <?php if (
-                                            $comment["user_id"]
-                                            == $_SESSION["user_id"]
-                                        ): ?>
-
-
-                                            <div
-                                                class="comment-actions"
-                                            >
-
-
-                                                <!-- EDIT COMMENT -->
-
-                                                <button
-                                                    type="button"
-                                                    onclick="showCommentEdit(
-                                                        <?php
-                                                        echo $comment['id'];
-                                                        ?>
-                                                    )"
-                                                >
-                                                    Edit
-                                                </button>
-
-
-                                                <!-- DELETE COMMENT -->
-
-                                                <form
-                                                    method="POST"
-                                                    action="index.php?page=delete_comment"
-                                                    style="display:inline;"
-                                                >
-
-                                                    <input
-                                                        type="hidden"
-                                                        name="comment_id"
-                                                        value="<?php
-                                                        echo $comment['id'];
-                                                        ?>"
-                                                    >
-
-
-                                                    <button
-                                                        type="submit"
-                                                    >
-                                                        Delete
-                                                    </button>
-
-                                                </form>
-
+                                <!-- Comments List -->
+                                <div class="mt-3 bg-light p-2 rounded">
+                                    <?php $comments = CommentModel::getByPostId($post['id']); ?>
+                                    <?php foreach ($comments as $comment): ?>
+                                        <div class="d-flex mb-2 align-items-center">
+                                            <img src="assets/images/<?= htmlspecialchars($comment['profile_image'] ?? 'default.png'); ?>" class="rounded-circle me-2" width="25" height="25" alt="Avatar">
+                                            <div class="flex-grow-1 bg-white p-2 rounded shadow-sm" style="font-size: 0.9rem;">
+                                                <strong><?= htmlspecialchars($comment['full_name']); ?>:</strong> 
+                                                <span><?= htmlspecialchars($comment['content']); ?></span>
                                             </div>
+                                        </div>
+                                    <?php endforeach; ?>
 
+                                    <!-- Add Comment Form -->
+                                    <form action="index.php?route=add_comment" method="POST" class="mt-2 d-flex">
+                                        <input type="hidden" name="post_id" value="<?= $post['id']; ?>">
+                                        <input type="text" name="content" class="form-control form-control-sm me-2" placeholder="Write a comment..." required>
+                                        <button type="submit" class="btn btn-outline-primary btn-sm">Send</button>
+                                    </form>
+                                </div>
 
-                                            <!-- EDIT COMMENT FORM -->
-
-                                            <div
-                                                id="comment-edit-<?php
-                                                echo $comment['id'];
-                                                ?>"
-                                                style="display:none;"
-                                            >
-
-                                                <form
-                                                    method="POST"
-                                                    action="index.php?page=edit_comment"
-                                                >
-
-                                                    <input
-                                                        type="hidden"
-                                                        name="comment_id"
-                                                        value="<?php
-                                                        echo $comment['id'];
-                                                        ?>"
-                                                    >
-
-
-                                                    <textarea
-                                                        name="content"
-                                                        rows="3"
-                                                        required
-                                                    ><?php
-
-                                                    echo htmlspecialchars(
-                                                        $comment["content"]
-                                                    );
-
-                                                    ?></textarea>
-
-
-                                                    <button
-                                                        type="submit"
-                                                    >
-                                                        Save
-                                                    </button>
-
-
-                                                    <button
-                                                        type="button"
-                                                        onclick="hideCommentEdit(
-                                                            <?php
-                                                            echo $comment['id'];
-                                                            ?>
-                                                        )"
-                                                    >
-                                                        Cancel
-                                                    </button>
-
-                                                </form>
-
-                                            </div>
-
-                                        <?php endif; ?>
-
-
-                                    </div>
-
-
-                                <?php endforeach; ?>
-
-
-                            <?php endif; ?>
-
-
-                            <!-- CREATE COMMENT -->
-
-                            <form
-                                method="POST"
-                                action="index.php?page=create_comment"
-                                class="comment-form"
-                            >
-
-                                <input
-                                    type="hidden"
-                                    name="post_id"
-                                    value="<?php
-                                    echo $post['id'];
-                                    ?>"
-                                >
-
-
-                                <textarea
-                                    name="content"
-                                    placeholder="Write a comment..."
-                                    rows="2"
-                                    required
-                                ></textarea>
-
-
-                                <button
-                                    type="submit"
-                                >
-                                    Comment
-                                </button>
-
-                            </form>
-
-
+                            </div>
                         </div>
-
-
-                    </article>
-
-
-                <?php endforeach; ?>
-
-
-            <?php endif; ?>
-
-
-        </section>
-
-
-    </main>
-
-
-</div>
-
-
-<!-- JAVASCRIPT -->
-
-<script>
-
-
-function showEditForm(postId)
-{
-    document.getElementById(
-        "post-content-" + postId
-    ).style.display = "none";
-
-
-    document.getElementById(
-        "edit-form-" + postId
-    ).style.display = "block";
-}
-
-
-
-function hideEditForm(postId)
-{
-    document.getElementById(
-        "post-content-" + postId
-    ).style.display = "block";
-
-
-    document.getElementById(
-        "edit-form-" + postId
-    ).style.display = "none";
-}
-
-
-
-function showCommentEdit(commentId)
-{
-    document.getElementById(
-        "comment-edit-" + commentId
-    ).style.display = "block";
-}
-
-
-
-function hideCommentEdit(commentId)
-{
-    document.getElementById(
-        "comment-edit-" + commentId
-    ).style.display = "none";
-}
-
-
-</script>
-
-
+                    <?php endforeach; ?>
+                <?php else: ?>
+                    <p class="text-muted">No posts yet. Be the first to post something!</p>
+                <?php endif; ?>
+            </div>
+        </div>
+    </div>
 </body>
-
 </html>

@@ -1,262 +1,67 @@
 <?php
-
 session_start();
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
 
-$page = $_GET['page'] ?? 'login';
+$route = isset($_GET['route']) ? $_GET['route'] : 'login';
 
-switch ($page) {
+// Require Controllers
+require_once __DIR__ . '/../app/controllers/AuthController.php';
+require_once __DIR__ . '/../app/controllers/PostController.php';
+require_once __DIR__ . '/../app/controllers/ProfileController.php';
+require_once __DIR__ . '/../app/controllers/SearchController.php';
+require_once __DIR__ . '/../app/controllers/CommentController.php';
+require_once __DIR__ . '/../app/controllers/LikeController.php';
 
+$authController = new AuthController();
+$postController = new PostController();
+$profileController = new ProfileController();
+$searchController = new SearchController();
+$commentController = new CommentController();
+$likeController = new LikeController();
 
-    // =========================
-    // LOGIN
-    // =========================
-
+switch ($route) {
     case 'login':
-
-        require_once "../app/controllers/AuthController.php";
-
-        $controller = new AuthController();
-
-        if ($_SERVER["REQUEST_METHOD"] === "POST") {
-
-            $controller->login();
-
-        } else {
-
-            $controller->showLogin();
-
-        }
-
+        $authController->login();
         break;
-
-
-    // =========================
-    // REGISTER
-    // =========================
-
     case 'register':
-
-        require_once "../app/controllers/AuthController.php";
-
-        $controller = new AuthController();
-
-        $controller->showRegister();
-
+        $authController->register();
         break;
-
-
-    case 'register_process':
-
-        require_once "../app/controllers/AuthController.php";
-
-        $controller = new AuthController();
-
-        $controller->register();
-
-        break;
-
-
-    // =========================
-    // DASHBOARD
-    // =========================
-
-    case 'dashboard':
-
-        require_once "../app/views/dashboard.php";
-
-        break;
-
-
-    // =========================
-    // PROFILE
-    // =========================
-
-    case 'profile':
-
-        require_once "../app/controllers/ProfileController.php";
-
-        $controller = new ProfileController();
-
-        $controller->profile();
-
-        break;
-
-
-    case 'update_profile':
-
-        require_once "../app/controllers/ProfileController.php";
-
-        $controller = new ProfileController();
-
-        $controller->update();
-
-        break;
-
-
-    // =========================
-    // NEWSFEED
-    // =========================
-
-    case 'newsfeed':
-
-        require_once "../app/controllers/PostController.php";
-
-        $controller = new PostController();
-
-        $controller->newsfeed();
-
-        break;
-
-
-    // =========================
-    // CREATE POST
-    // =========================
-
-    case 'create_post':
-
-        require_once "../app/controllers/PostController.php";
-
-        $controller = new PostController();
-
-        $controller->create();
-
-        break;
-
-
-    // =========================
-    // EDIT POST
-    // =========================
-
-    case 'edit_post':
-
-        require_once "../app/controllers/PostController.php";
-
-        $controller = new PostController();
-
-        $controller->edit();
-
-        break;
-
-
-    // =========================
-    // DELETE POST
-    // =========================
-
-    case 'delete_post':
-
-        require_once "../app/controllers/PostController.php";
-
-        $controller = new PostController();
-
-        $controller->delete();
-
-        break;
-
-
-    // =========================
-    // CREATE COMMENT
-    // =========================
-
-    case 'create_comment':
-
-        require_once "../app/controllers/CommentController.php";
-
-        $controller = new CommentController();
-
-        $controller->create();
-
-        break;
-
-
-    // =========================
-    // EDIT COMMENT
-    // =========================
-
-    case 'edit_comment':
-
-        require_once "../app/controllers/CommentController.php";
-
-        $controller = new CommentController();
-
-        $controller->edit();
-
-        break;
-
-
-    // =========================
-    // DELETE COMMENT
-    // =========================
-
-    case 'delete_comment':
-
-        require_once "../app/controllers/CommentController.php";
-
-        $controller = new CommentController();
-
-        $controller->delete();
-
-        break;
-
-
-    // =========================
-    // LIKE / UNLIKE
-    // =========================
-
-    case 'toggle_like':
-
-        require_once "../app/controllers/LikeController.php";
-
-        $controller = new LikeController();
-
-        $controller->toggle();
-
-        break;
-
-
-    // =========================
-    // SEARCH
-    // =========================
-
-    case 'search':
-
-        require_once "../app/controllers/SearchController.php";
-
-        $controller = new SearchController();
-
-        $controller->search();
-
-        break;
-
-
-    // =========================
-    // LOGOUT
-    // =========================
-
     case 'logout':
-
-        require_once "../app/controllers/AuthController.php";
-
-        $controller = new AuthController();
-
-        $controller->logout();
-
+        $authController->logout();
         break;
-
-
-    // =========================
-    // DEFAULT
-    // =========================
-
+    case 'dashboard':
+    case 'newsfeed':
+        $postController->newsfeed();
+        break;
+    case 'create_post':
+        $postController->create();
+        break;
+    case 'edit_post':
+        $postController->edit();
+        break;
+    case 'delete_post':
+        $postController->delete();
+        break;
+    case 'profile':
+        $profileController->index();
+        break;
+    case 'update_profile':
+        $profileController->update();
+        break;
+    case 'search':
+        $searchController->search();
+        break;
+    case 'add_comment':
+        $commentController->create();
+        break;
+    case 'toggle_like':
+        $likeController->toggle();
+        break;
     default:
-
-        require_once "../app/controllers/AuthController.php";
-
-        $controller = new AuthController();
-
-        $controller->showLogin();
-
+        http_response_code(404);
+        echo "404 - Page Not Found";
         break;
-
 }
-
 ?>
